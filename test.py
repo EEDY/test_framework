@@ -543,6 +543,17 @@ def main():
     else:'''
     
     
+    nodes = read_file(options.nodes)
+    logger.info(nodes)
+    
+    fail, output = run_linux_cmd("sqcheck", nodes[1])
+
+    if fail == 1:
+      logger.info("*** ERROR *** Generate data cmd failed: " + "sqcheck")
+      logger.info("*** ERROR *** Detail Error Info : " + ''.join(output))
+
+    return
+
     data_dir_list = read_file(options.dirs)
     data_dir_num = len(data_dir_list)
     is_hdfs = False
