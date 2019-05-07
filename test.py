@@ -23,20 +23,8 @@ from common import *
 from common.threadpool import *
 
 
-ESGDATA_HOME = os.environ['HOME'] + "/log/"
+TEST_HOME = os.environ['HOME'] + "/log/"
 
-
-def get_cmd(cmd):
-    import getpass
-    global pre_cmd
-    user = getpass.getuser()
-    retval = run_linux_cmd("sudo su hdfs -c 'echo'")[0]
-    if retval == 0:
-        pre_cmd = "sudo su hdfs -c '" + cmd + "'"
-    else:
-        logger.warn("the user:%s can't run tpcds script. " % user)
-        print("the user:%s can't run tpcds-script. \n" % user)
-        sys.exit(1)
 
 logging.config.fileConfig("./conf/logging.conf")
 logger = logging.getLogger(__name__)
@@ -114,8 +102,8 @@ def push_esgdata_kit(nodes):
   """ Push tpcds_kit to all nodes """
   logger.info("push esgdata-kit to cluster")
   esgdata_kit = " esgdata tpcds.idx " + options.excel + " files "
-  cluster_scp(esgdata_kit, nodes, ESGDATA_HOME)
-  cluster_scp("convert_to_utf8.sh", nodes, ESGDATA_HOME)
+  cluster_scp(esgdata_kit, nodes, TEST_HOME)
+  cluster_scp("convert_to_utf8.sh", nodes, TEST_HOME)
 
 
 def hdfs_mkdir(dim_tables, fact_tables):
@@ -189,15 +177,15 @@ def run_linux_cmd(cmd, node=None, info=False):
 
 def gen_data_thread(excel, dir, table, node, rcount, child, parallel):
   """ Generate 'DIM' data or part of 'FACT' data for specified table on given node """
-  cmd = ESGDATA_HOME + "/esgdata -INPUT " + excel \
+  cmd = TEST_HOME + "/esgdata -INPUT " + excel \
                    + " -RCOUNT " + str(rcount) \
                    + " -TERMINATE N " \
                    + " -DIR " + dir + "/" + table\
                    + " -QUIET Y " \
                    + " -RNGSEED " + str(options.seed) \
                    + " -DELIMITER \"" + delimiter + "\"" \
-                   + " -DISTRIBUTIONS " + ESGDATA_HOME + "/tpcds.idx " \
-                   + " -FILEDIR " + ESGDATA_HOME + "/files "
+                   + " -DISTRIBUTIONS " + TEST_HOME + "/tpcds.idx " \
+                   + " -FILEDIR " + TEST_HOME + "/files "
   '''cmd2_to_utf8 = "bash " + TPCDS_ROOT + "/../convert_to_utf8.sh %s/%s.dat" % (dir, table)'''
 
   if parallel > 1:
@@ -590,7 +578,7 @@ def main():
             sys.exit(-1)
 
         push_esgdata_kit(nodes)
-        gen_data(ESGDATA_HOME + os.path.basename(options.excel), data_dir_list, sheet_name, nodes, options.rcount, options.parallel)
+        gen_data(TEST_HOME + os.path.basename(options.excel), data_dir_list, sheet_name, nodes, options.rcount, options.parallel)
 
         signal.signal(signal.SIGINT, signal.SIG_DFL)
 
