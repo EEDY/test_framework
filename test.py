@@ -64,7 +64,7 @@ def get_option(usage, version):
 
     options, args = parser.parse_args()
 
-    if not options.clean and not options.generate and options.put is None and not options.getddl:
+    '''    if not options.clean and not options.generate and options.put is None and not options.getddl:
         parser.error("You must specify at least one of options : -G, -P, -C or -D.")
         sys.exit(-1)
 
@@ -75,15 +75,15 @@ def get_option(usage, version):
     if options.generate:
         if not options.rcount:
             parser.error("You must specify a total Row Count by '-c' option when generating data.")
-            sys.exit(-1)
+            sys.exit(-1)'''
 
     '''if options.hdfs and options.clean is False:
       logger.info("data is generating to HDFS:%s" % (options.hdfs))
     else:
       logger.info("data is generating to DISK:%s" % (options.dirs))'''
       
-    if options.deli and len(options.deli) > 1:
-        logger.warn("Your delimiter is too long, will use first character of your delimter : " + options.deli)
+    #if options.deli and len(options.deli) > 1:
+    #    logger.warn("Your delimiter is too long, will use first character of your delimter : " + options.deli)
 
     return (options, args)
 
@@ -151,11 +151,13 @@ def delete_data_from_linux(linux_data_dir, nodes, table):
     proc.join()
 
 
-def run_linux_cmd(cmd, node=None, info=False):
+def run_linux_cmd(cmd, node=None, info=False, user=None):
   """ Run any linux build-in cmd or executable on local node or specified remote node """
   if cmd is None:
     logger.error("You must specify a command to run")
 
+  if user is not None:
+    cmd = " su - " + user + " -c " + cmd 
   if node is not None:
     cmd = "ssh -q -n " + node + " '" + cmd + "'"
 
@@ -546,11 +548,10 @@ def main():
     nodes = read_file(options.nodes)
     logger.info(nodes)
     
-    fail, output = run_linux_cmd("sqcheck", nodes[1])
+    fail, output = run_linux_cmd("sqcheck", nodes[1], user="trafodion")
 
-    if fail == 1:
-      logger.info("*** ERROR *** Generate data cmd failed: " + "sqcheck")
-      logger.info("*** ERROR *** Detail Error Info : " + ''.join(output))
+    #logger.info("*** ERROR *** Generate data cmd failed: " + "sqcheck")
+    #logger.info("*** ERROR *** Detail Error Info : " + ''.join(output))
 
     return
 
